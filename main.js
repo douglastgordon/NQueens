@@ -168,6 +168,8 @@ class Board {
   }
 
   run() {
+    this.randomlyPopulateTiles()
+    this.makeInitialHtml()
     let moves = []
     let attempts = 0
     const before = new Date
