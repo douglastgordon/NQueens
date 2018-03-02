@@ -1,0 +1,23 @@
+ul {
+  width: 400px;
+  height: 400px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  list-style: none;
+}
+
+li {
+  height: 50px;
+  width: 50px;
+  background-color: #7abe80;
+}
+
+li.even-file:not(.even-rank), li.odd-file:not(.odd-rank) {
+  background-color: #ffbdbd;
+}
+
+img {
+  height: 45px;
+  width: auto;
+}
