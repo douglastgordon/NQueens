@@ -68,7 +68,9 @@ class Board {
   //   })
   // }
 
-
+  clearTiles() {
+    this.tiles = Array.from(new Array(SIDE_LENGTH), () => Array.from(new Array(SIDE_LENGTH), () => 0))
+  }
 
   randomlyPopulateTiles() {
     this.tiles.forEach((row, x) => {
@@ -100,24 +102,28 @@ class Board {
   rowConflicts(position) {
     const [x, _] = position
     const row = this.tiles[x]
-    return row.sum() - 1
+    const subtractor = this.isQueen(position) ? 1 : 0
+    return row.sum() - subtractor
   }
 
   columnConflicts(position) {
     const [_, y] = position
-    return this.tiles.map(row => row[y]).sum() - 1
+    const subtractor = this.isQueen(position) ? 1 : 0
+    return this.tiles.map(row => row[y]).sum() - subtractor
   }
 
   diagonalConflicts(position) {
+    const subtractor = this.isQueen(position) ? 1 : 0
     return this.tiles.map((row, x) => {
       return row.filter((_, y) => {
         return this.shareDiagonal(position, [x, y])
       }).sum()
-    }).sum() - 1
+    }).sum() - subtractor
   }
 
   isSolved() {
-    return this.findMostConflictedQueen === [null, null]
+    const [x, y] = this.findMostConflictedQueen()
+    return x === null && y === null
   }
 
   shareDiagonal(positionA, positionB) {
@@ -129,62 +135,68 @@ class Board {
     console.log(this.tiles)
   }
 
-  // makeInitialHtml() {
-  //   const ul = document.getElementById("board")
-  //   board.tiles.forEach((row, x) => {
-  //     row.forEach((el, y) => {
-  //       const li = document.createElement("li")
-  //       li.id = `${x}-${y}`
-  //       const fileClass = x % 2 === 0 ? "even-file" : "odd-file"
-  //       const rankClass = y % 2 === 0 ? "even-rank" : "odd-rank"
-  //       li.classList.add(fileClass)
-  //       li.classList.add(rankClass)
-  //       if (this.isQueen([x, y])) {
-  //         const queen = document.createElement("img")
-  //         queen.src = "queen.png"
-  //         li.appendChild(queen)
-  //       }
-  //       ul.appendChild(li)
-  //     })
-  //   })
-  // }
+  makeInitialHtml() {
+    const ul = document.getElementById("board")
+    ul.innerHTML = ""
+    board.tiles.forEach((row, x) => {
+      row.forEach((el, y) => {
+        const li = document.createElement("li")
+        li.id = `${x}-${y}`
+        const fileClass = x % 2 === 0 ? "even-file" : "odd-file"
+        const rankClass = y % 2 === 0 ? "even-rank" : "odd-rank"
+        li.classList.add(fileClass)
+        li.classList.add(rankClass)
+        if (this.isQueen([x, y])) {
+          const queen = document.createElement("img")
+          queen.src = "queen.png"
+          li.appendChild(queen)
+        }
+        ul.appendChild(li)
+      })
+    })
+  }
 
-  // changeQueensHtml(from, to) {
-  //   const [[fromX, fromY], [toX, toY]] = [from, to]
-  //   const fromNode = document.getElementById(`${fromX}-${fromY}`)
-  //   console.log(fromNode)
-  //   fromNode.innerHTML = ""
-  //   const toNode =  document.getElementById(`${toX}-${toY}`)
-  //   const queen = document.createElement("img")
-  //   queen.src = "queen.png"
-  //   toNode.appendChild(queen)
-  // }
+  changeQueensHtml(from, to) {
+    const [[fromX, fromY], [toX, toY]] = [from, to]
+    const fromNode = document.getElementById(`${fromX}-${fromY}`)
+    fromNode.innerHTML = ""
+    const toNode =  document.getElementById(`${toX}-${toY}`)
+    const queen = document.createElement("img")
+    queen.src = "queen.png"
+    toNode.appendChild(queen)
+  }
 
   run() {
     this.randomlyPopulateTiles()
-    // this.makeInitialHtml()
+    this.makeInitialHtml()
 
-
+    let i = 0
     let moves = []
-    while (!this.isSolved() && moves.length < 10) {
+    while (!this.isSolved() && moves.length < 20) {
       const [x, y] = this.findMostConflictedQueen()
+      // if ([x, y] === [null, null]) { break }
       const leastConflictedTileInRow = this.leastConflictedTileInRow(this.tiles[x], x)
       this.moveQueen([x, y], leastConflictedTileInRow)
       moves.push([[x, y], leastConflictedTileInRow])
       if (moves.containsLoop()) {
+        console.log("clearing")
+        this.clearTiles()
         this.randomlyPopulateTiles()
-        // this.makeInitialHtml()
+        moves = []
+        this.makeInitialHtml()
+        console.log("attempt", i)
+        i += 1
       }
     }
     console.log(moves)
 
 
-    // moves.forEach((move, i) => {
-    //   const [from, to] = move
-    //   setTimeout(() => {
-    //     this.changeQueensHtml(from, to)
-    //   }, 1000 * (i + 1))
-    // })
+    moves.forEach((move, i) => {
+      const [from, to] = move
+      setTimeout(() => {
+        this.changeQueensHtml(from, to)
+      }, 1000 * (i + 1))
+    })
 
 
   }
