@@ -1,4 +1,4 @@
-const SIDE_LENGTH = 8
+let SIDE_LENGTH = 8
 
 Array.prototype.sum = function () {
   const add = (a, b) => a + b
@@ -61,18 +61,19 @@ class Board {
     return mostConflictedQueenPosition
   }
 
-  // populateTiles() {
-  //   // add one queen per row, picking position with minimum conflicts
-  //   this.tiles.forEach((row, x) => {
-  //     this.addQueen(this.leastConflictedTileInRow(row, x))
-  //   })
-  // }
+  populateTiles() {
+    // add one queen per row, picking position with minimum conflicts
+    this.tiles.forEach((row, x) => {
+      this.addQueen(this.leastConflictedTileInRow(row, x))
+    })
+  }
 
   clearTiles() {
     this.tiles = Array.from(new Array(SIDE_LENGTH), () => Array.from(new Array(SIDE_LENGTH), () => 0))
   }
 
   randomlyPopulateTiles() {
+    this.clearTiles()
     this.tiles.forEach((row, x) => {
       const randomY = Math.floor(Math.random() * SIDE_LENGTH)
       this.addQueen([x, randomY])
@@ -138,7 +139,7 @@ class Board {
   makeInitialHtml() {
     const ul = document.getElementById("board")
     ul.innerHTML = ""
-    board.tiles.forEach((row, x) => {
+    this.tiles.forEach((row, x) => {
       row.forEach((el, y) => {
         const li = document.createElement("li")
         li.id = `${x}-${y}`
@@ -167,40 +168,56 @@ class Board {
   }
 
   run() {
-    this.randomlyPopulateTiles()
-    this.makeInitialHtml()
-
-    let i = 0
     let moves = []
+    let attempts = 0
+    const before = new Date
     while (!this.isSolved() && moves.length < 20) {
       const [x, y] = this.findMostConflictedQueen()
-      // if ([x, y] === [null, null]) { break }
       const leastConflictedTileInRow = this.leastConflictedTileInRow(this.tiles[x], x)
       this.moveQueen([x, y], leastConflictedTileInRow)
       moves.push([[x, y], leastConflictedTileInRow])
       if (moves.containsLoop()) {
-        console.log("clearing")
-        this.clearTiles()
+        attempts += 1
         this.randomlyPopulateTiles()
         moves = []
         this.makeInitialHtml()
-        console.log("attempt", i)
-        i += 1
       }
     }
-    console.log(moves)
-
-
+    const after = new Date
+    // return (after - before) // comment back in when running time()
     moves.forEach((move, i) => {
       const [from, to] = move
       setTimeout(() => {
         this.changeQueensHtml(from, to)
       }, 1000 * (i + 1))
     })
-
-
   }
 }
 
-const board = new Board
-board.run()
+
+const time = () => {
+  const times = {}
+  Array.from(new Array(9), (_, i) => i+4).forEach((sideLength) => {
+    times[sideLength] = []
+    SIDE_LENGTH = sideLength
+    console.log(sideLength)
+    for(let i = 0; i < 100; i += 1) {
+      console.log(sideLength, i)
+      times[sideLength].push(board.run())
+    }
+  })
+  console.log(times)
+  const add = (a, b) => a + b
+  const averages = Object.keys(times).map(time => times[time].reduce(add) / times[time].length)
+  return averages
+}
+
+
+(() => {
+  const board = new Board
+  board.randomlyPopulateTiles()
+  board.makeInitialHtml()
+  document.getElementById("run").addEventListener("click", () => {
+    board.run()
+  })
+})()
