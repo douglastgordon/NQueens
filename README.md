@@ -1,5 +1,7 @@
 # NQueens
 
+[Visualsation](http://www.douglasgordon.me/NQueens/)
+
 A JavaScript solution to the [NQueens problem](https://en.wikipedia.org/wiki/Eight_queens_puzzle).
 
 ## Problem
